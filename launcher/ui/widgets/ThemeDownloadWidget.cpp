@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ThemeDownloadWidget.h"
 
+#include <algorithm>
+
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTabBar>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -39,6 +42,16 @@ ThemeDownloadWidget::ThemeDownloadWidget(QWidget* parent) : QGroupBox(tr("Get mo
     statusRow->addWidget(m_status, 1);
     statusRow->addWidget(m_retry);
 
+    // One tab per ThemeRepoKind, in enum order.
+    m_tabs = new QTabBar(this);
+    m_tabs->setDocumentMode(true);
+    m_tabs->setExpanding(false);
+    m_tabs->setDrawBase(false);
+    m_tabs->addTab(tr("Themes"));
+    m_tabs->addTab(tr("Icons"));
+    m_tabs->addTab(tr("Cat packs"));
+    connect(m_tabs, &QTabBar::currentChanged, this, &ThemeDownloadWidget::applyFilter);
+
     m_table = new QTableWidget(0, 3, this);
     m_table->horizontalHeader()->hide();
     m_table->verticalHeader()->hide();
@@ -48,11 +61,13 @@ ThemeDownloadWidget::ThemeDownloadWidget(QWidget* parent) : QGroupBox(tr("Get mo
     m_table->setFocusPolicy(Qt::NoFocus);
     m_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     m_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    m_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    m_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
+    m_table->setColumnHidden(1, true);  // the tabs already show the type
     m_table->setMinimumHeight(240);
 
     auto* layout = new QVBoxLayout(this);
     layout->addLayout(statusRow);
+    layout->addWidget(m_tabs);
     layout->addWidget(m_table);
 
     loadList();
@@ -68,6 +83,7 @@ void ThemeDownloadWidget::showStatus(const QString& text, bool showRetry)
 void ThemeDownloadWidget::loadList()
 {
     showStatus(tr("Loading…"), false);
+    m_tabs->setVisible(false);
     m_table->setVisible(false);
 
     const QUrl url(QString("https://api.github.com/repos/%1/releases/latest").arg(BuildConfig.THEMES_REPO));
@@ -101,6 +117,13 @@ void ThemeDownloadWidget::populate()
 {
     m_downloadingRows.clear();
     m_table->setRowCount(m_items.size());
+    // Fit the button column to the longest label in the current style (some themes use wide fonts).
+    int buttonWidth = 0;
+    for (const QString& label : { tr("Download"), tr("Downloading…"), tr("Installed") }) {
+        QPushButton probe(label, m_table);
+        buttonWidth = std::max(buttonWidth, probe.sizeHint().width());
+    }
+    m_table->setColumnWidth(2, buttonWidth + 8);
     for (int row = 0; row < m_items.size(); ++row) {
         const auto& item = m_items[row];
         m_table->setItem(row, 0, new QTableWidgetItem(item.displayName));
@@ -108,7 +131,17 @@ void ThemeDownloadWidget::populate()
         setRowButton(row);
     }
     showStatus(m_items.isEmpty() ? tr("No themes available.") : QString(), false);
+    m_tabs->setVisible(!m_items.isEmpty());
     m_table->setVisible(!m_items.isEmpty());
+    applyFilter();
+}
+
+void ThemeDownloadWidget::applyFilter()
+{
+    const auto kind = static_cast<ThemeRepoKind>(m_tabs->currentIndex());
+    for (int row = 0; row < m_items.size(); ++row)
+        m_table->setRowHidden(row, m_items[row].kind != kind);
+    m_table->scrollToTop();
 }
 
 void ThemeDownloadWidget::setRowButton(int row)
@@ -158,6 +191,9 @@ void ThemeDownloadWidget::download(int row)
                                  tr("Couldn't install %1: %2").arg(item.displayName, installed.error()));
             return;
         }
+        // The real folder name can differ from the one guessed from the asset name.
+        if (row < m_items.size() && m_items[row].downloadUrl == item.downloadUrl)
+            m_items[row].folderName = *installed;
         emit itemInstalled(item.kind, *installed);
         refreshInstalledState();
     });

@@ -120,6 +120,50 @@ class ThemeRepositoryTest : public QObject {
         QVERIFY(!QFile::exists(outerDir.filePath("a/evil.txt")));
         QVERIFY(!QFile::exists(outerDir.filePath("evil.txt")));
     }
+    void test_installWithDirectoryEntries()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/DirEntries-theme.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        if (!result)
+            QFAIL(result.error().toLatin1());
+        QCOMPARE(*result, QString("Nord"));
+    }
+
+    void test_installRejectsTwoFolders()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/TwoFolders-theme.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        QVERIFY(!result.has_value());
+        QVERIFY(QDir(tmp.path()).isEmpty());
+    }
+
+    void test_installRejectsLooseFiles()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/LooseFile-theme.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        QVERIFY(!result.has_value());
+        QVERIFY(QDir(tmp.path()).isEmpty());
+    }
+
+    void test_installDoesNotOverwrite()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        QDir dir(tmp.path());
+        QVERIFY(dir.mkdir("Nord"));
+        QFile edited(dir.filePath("Nord/theme.json"));
+        QVERIFY(edited.open(QIODevice::WriteOnly));
+        edited.write("edited");
+        edited.close();
+
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/Nord-theme.zip"), ThemeRepoKind::Theme, dir);
+        QVERIFY(!result.has_value());
+        QVERIFY(edited.open(QIODevice::ReadOnly));
+        QCOMPARE(edited.readAll(), QByteArray("edited"));
+    }
 };
 
 QTEST_GUILESS_MAIN(ThemeRepositoryTest)

@@ -10,6 +10,7 @@
 
 class QLabel;
 class QPushButton;
+class QTabBar;
 class QTableWidget;
 
 // Folder in which ThemeManager looks for items of the given kind.
@@ -34,9 +35,11 @@ class ThemeDownloadWidget : public QGroupBox {
     void populate();
     void setRowButton(int row);
     void download(int row);
+    void applyFilter();
 
     QLabel* m_status;
     QPushButton* m_retry;
+    QTabBar* m_tabs;
     QTableWidget* m_table;
     QList<ThemeRepoItem> m_items;
     QList<int> m_downloadingRows;

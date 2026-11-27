@@ -2,6 +2,7 @@
 #include "ThemeRepository.h"
 
 #include "MMCZip.h"
+#include "archive/ArchiveReader.h"
 
 #include <QCoreApplication>
 #include <QJsonArray>
@@ -89,15 +90,40 @@ static QString zipPrefix(ThemeRepoKind kind)
     return {};
 }
 
+// Finds the single item folder under prefix ("themes/Nord/…" -> "Nord").
+static Result<QString> findItemFolder(const QString& zipPath, const QString& prefix)
+{
+    MMCZip::ArchiveReader reader(zipPath);
+    TRY(reader.collectFiles(true))
+
+    QString folder;
+    for (const QString& path : reader.getFiles()) {
+        if (!path.startsWith(prefix))
+            continue;
+        const QString rest = path.mid(prefix.size());
+        const QString first = rest.section('/', 0, 0);
+        if (!rest.contains('/') || first.isEmpty() || first == "." || first == "..")
+            return std::unexpected{ QCoreApplication::translate("ThemeRepository", "Unexpected file in archive: %1").arg(path) };
+        if (!folder.isEmpty() && folder != first)
+            return std::unexpected{ QCoreApplication::translate("ThemeRepository", "Archive contains more than one item.") };
+        folder = first;
+    }
+    if (folder.isEmpty())
+        return std::unexpected{ QCoreApplication::translate("ThemeRepository", "Archive has no %1 folder.").arg(prefix) };
+    return folder;
+}
+
 Result<QString> installThemeRepoZip(const QString& zipPath, ThemeRepoKind kind, const QDir& targetDir)
 {
     const QString prefix = zipPrefix(kind);
+    TRY_INTO(const QString folder, findItemFolder(zipPath, prefix))
+
     // The archive writer refuses to extract through symlinks, so resolve them in the target path first.
     const QString canonical = targetDir.canonicalPath();
     const QDir target(canonical.isEmpty() ? targetDir.absolutePath() : canonical);
-    TRY_INTO(QStringList extracted, MMCZip::extractDir(zipPath, prefix, target.absolutePath()))
-    if (extracted.isEmpty())
-        return std::unexpected{ QCoreApplication::translate("ThemeRepository", "Archive has no %1 folder.").arg(prefix) };
-    const QString relative = target.relativeFilePath(extracted.first());
-    return relative.section('/', 0, 0);
+    if (target.exists(folder))
+        return std::unexpected{ QCoreApplication::translate("ThemeRepository", "%1 is already installed.").arg(folder) };
+
+    TRY(MMCZip::extractDir(zipPath, prefix, target.absolutePath()))
+    return folder;
 }
