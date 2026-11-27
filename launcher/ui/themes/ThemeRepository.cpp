@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ThemeRepository.h"
 
+#include "MMCZip.h"
+
 #include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -72,4 +74,30 @@ QString themeRepoKindLabel(ThemeRepoKind kind)
 bool isThemeRepoItemInstalled(const ThemeRepoItem& item, const QDir& targetDir)
 {
     return targetDir.exists(item.folderName);
+}
+
+static QString zipPrefix(ThemeRepoKind kind)
+{
+    switch (kind) {
+        case ThemeRepoKind::Theme:
+            return "themes/";
+        case ThemeRepoKind::Icons:
+            return "icons/";
+        case ThemeRepoKind::CatPack:
+            return "cats/";
+    }
+    return {};
+}
+
+Result<QString> installThemeRepoZip(const QString& zipPath, ThemeRepoKind kind, const QDir& targetDir)
+{
+    const QString prefix = zipPrefix(kind);
+    // The archive writer refuses to extract through symlinks, so resolve them in the target path first.
+    const QString canonical = targetDir.canonicalPath();
+    const QDir target(canonical.isEmpty() ? targetDir.absolutePath() : canonical);
+    TRY_INTO(QStringList extracted, MMCZip::extractDir(zipPath, prefix, target.absolutePath()))
+    if (extracted.isEmpty())
+        return std::unexpected{ QCoreApplication::translate("ThemeRepository", "Archive has no %1 folder.").arg(prefix) };
+    const QString relative = target.relativeFilePath(extracted.first());
+    return relative.section('/', 0, 0);
 }

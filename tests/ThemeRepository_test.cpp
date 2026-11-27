@@ -77,6 +77,49 @@ class ThemeRepositoryTest : public QObject {
         QVERIFY(dir.mkdir("Nord"));
         QVERIFY(isThemeRepoItemInstalled(*nord, dir));
     }
+    void test_install()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/Nord-theme.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        if (!result)
+            QFAIL(result.error().toLatin1());
+        QCOMPARE(*result, QString("Nord"));
+        QVERIFY(QFile::exists(QDir(tmp.path()).filePath("Nord/theme.json")));
+    }
+
+    void test_installActualFolderName()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/Dotted-theme.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        if (!result)
+            QFAIL(result.error().toLatin1());
+        QCOMPARE(*result, QString("Real Name"));
+    }
+
+    void test_installBadLayout()
+    {
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/bad-layout.zip"), ThemeRepoKind::Theme, QDir(tmp.path()));
+        QVERIFY(!result.has_value());
+        QVERIFY(QDir(tmp.path()).isEmpty());
+    }
+
+    void test_installEscape()
+    {
+        QTemporaryDir outer;
+        QVERIFY(outer.isValid());
+        QDir outerDir(outer.path());
+        QVERIFY(outerDir.mkpath("a/themes"));
+        QDir target(outerDir.filePath("a/themes"));
+        auto result = installThemeRepoZip(QFINDTESTDATA("testdata/ThemeRepository/escape-theme.zip"), ThemeRepoKind::Theme, target);
+        QVERIFY(!result.has_value());
+        QVERIFY(!QFile::exists(target.filePath("evil.txt")));
+        QVERIFY(!QFile::exists(outerDir.filePath("a/evil.txt")));
+        QVERIFY(!QFile::exists(outerDir.filePath("evil.txt")));
+    }
 };
 
 QTEST_GUILESS_MAIN(ThemeRepositoryTest)

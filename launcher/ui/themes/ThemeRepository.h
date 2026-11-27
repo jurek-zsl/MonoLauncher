@@ -29,3 +29,7 @@ Result<QList<ThemeRepoItem>> parseThemeRepoRelease(const QByteArray& json);
 QString themeRepoKindLabel(ThemeRepoKind kind);
 
 bool isThemeRepoItemInstalled(const ThemeRepoItem& item, const QDir& targetDir);
+
+// Extracts the item folder from a downloaded repository zip ("themes/<Name>/…",
+// "icons/<Name>/…" or "cats/<Name>/…") into targetDir. Returns the installed folder name.
+Result<QString> installThemeRepoZip(const QString& zipPath, ThemeRepoKind kind, const QDir& targetDir);
