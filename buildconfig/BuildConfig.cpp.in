@@ -120,6 +120,7 @@ Config::Config()
     SDL_LIBRARY_NAME = "@Launcher_SDL_LIBRARY_NAME@";
 
     BUG_TRACKER_URL = "@Launcher_BUG_TRACKER_URL@";
+    THEMES_REPO = "@Launcher_THEMES_REPO@";
     TRANSLATIONS_URL = "@Launcher_TRANSLATIONS_URL@";
     TRANSLATION_FILES_URL = "@Launcher_TRANSLATION_FILES_URL@";
     MATRIX_URL = "@Launcher_MATRIX_URL@";

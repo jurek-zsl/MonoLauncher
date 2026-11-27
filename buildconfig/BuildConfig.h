@@ -168,6 +168,11 @@ class Config {
     QString SDL_LIBRARY_NAME;
 
     QString BUG_TRACKER_URL;
+
+    /**
+     * GitHub "owner/repo" whose latest release provides downloadable themes
+     */
+    QString THEMES_REPO;
     QString TRANSLATIONS_URL;
     QString MATRIX_URL;
     QString DISCORD_URL;

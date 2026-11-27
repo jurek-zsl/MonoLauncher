@@ -207,6 +207,9 @@ set(Launcher_META_URL "https://meta.prismlauncher.org/v1/" CACHE STRING "URL to 
 # Imgur API Client ID
 set(Launcher_IMGUR_CLIENT_ID "5b97b0713fba4a3" CACHE STRING "Client ID you can get from Imgur when you register an application")
 
+# Theme repository (GitHub "owner/repo") used by the theme downloader in Appearance settings
+set(Launcher_THEMES_REPO "PrismLauncher/Themes" CACHE STRING "GitHub repository whose latest release provides downloadable themes.")
+
 # Bug tracker URL
 set(Launcher_BUG_TRACKER_URL "https://github.com/jurek-zsl/MonoLauncher/issues" CACHE STRING "URL for the bug tracker.")
 
