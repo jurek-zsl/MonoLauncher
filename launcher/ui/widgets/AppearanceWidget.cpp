@@ -42,6 +42,7 @@
 #include "BuildConfig.h"
 #include "ui/themes/ITheme.h"
 #include "ui/themes/ThemeManager.h"
+#include "ui/widgets/ThemeDownloadWidget.h"
 
 #include <Application.h>
 #include "settings/SettingsObject.h"
@@ -69,6 +70,10 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
 
         updateConsolePreview();
         updateCatPreview();
+
+        m_themeDownloader = new ThemeDownloadWidget(this);
+        m_ui->verticalLayout->insertWidget(m_ui->verticalLayout->indexOf(m_ui->themingBox) + 1, m_themeDownloader);
+        connect(m_themeDownloader, &ThemeDownloadWidget::itemInstalled, this, &AppearanceWidget::selectInstalledItem);
     }
 
     connect(m_ui->fontSizeBox, &QSpinBox::valueChanged, this, &AppearanceWidget::updateConsolePreview);
@@ -88,7 +93,32 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     connect(m_ui->reloadThemesButton, &QPushButton::clicked, this, [this] {
         m_themeSettingsLoaded = false;
         loadThemeSettings();
+        if (m_themeDownloader)
+            m_themeDownloader->refreshInstalledState();
     });
+}
+
+void AppearanceWidget::selectInstalledItem(ThemeRepoKind kind, const QString& id)
+{
+    // Reload the lists (this also refreshes the ThemeManager), then pick the new item;
+    // the combo boxes' currentIndexChanged handlers apply it.
+    m_themeSettingsLoaded = false;
+    loadThemeSettings();
+
+    QComboBox* combo = nullptr;
+    switch (kind) {
+        case ThemeRepoKind::Theme:
+            combo = m_ui->widgetStyleComboBox;
+            break;
+        case ThemeRepoKind::Icons:
+            combo = m_ui->iconsComboBox;
+            break;
+        case ThemeRepoKind::CatPack:
+            combo = m_ui->catPackComboBox;
+            break;
+    }
+    if (const int index = combo ? combo->findData(id) : -1; index >= 0)
+        combo->setCurrentIndex(index);
 }
 
 AppearanceWidget::~AppearanceWidget()
