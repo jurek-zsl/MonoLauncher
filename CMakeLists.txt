@@ -453,6 +453,13 @@ if(UNIX AND APPLE)
             set(ASSETS_OUT_DIR "${CMAKE_BINARY_DIR}/program_info")
             set(GENERATED_ASSETS_CAR "${ASSETS_OUT_DIR}/Assets.car")
             set(ICON_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/${Launcher_Branding_MAC_ICON}")
+            # Depend on the files inside the .icon bundle, not just the folder, so edits trigger a rebuild
+            file(GLOB_RECURSE ICON_SOURCE_FILES CONFIGURE_DEPENDS "${ICON_SOURCE}/*")
+            # actool needs a value here; an empty one shifts its arguments
+            set(ACTOOL_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            if(NOT ACTOOL_DEPLOYMENT_TARGET)
+                set(ACTOOL_DEPLOYMENT_TARGET "13.0")
+            endif()
 
             add_custom_command(
                 OUTPUT "${GENERATED_ASSETS_CAR}"
