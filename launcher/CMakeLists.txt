@@ -850,6 +850,8 @@ SET(LAUNCHER_SOURCES
     ui/themes/CustomTheme.h
     ui/themes/DarkTheme.cpp
     ui/themes/DarkTheme.h
+    ui/themes/MonoTheme.cpp
+    ui/themes/MonoTheme.h
     ui/themes/ITheme.cpp
     ui/themes/ITheme.h
     ui/themes/HintOverrideProxyStyle.cpp
@@ -1203,6 +1205,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/breeze_light/breeze_light.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
+    resources/mono/mono.qrc
     resources/documents/documents.qrc
     resources/shaders/shaders.qrc
     "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
