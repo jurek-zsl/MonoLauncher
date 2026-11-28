@@ -850,6 +850,8 @@ SET(LAUNCHER_SOURCES
     ui/themes/CustomTheme.h
     ui/themes/DarkTheme.cpp
     ui/themes/DarkTheme.h
+    ui/themes/MonoTheme.cpp
+    ui/themes/MonoTheme.h
     ui/themes/ITheme.cpp
     ui/themes/ITheme.h
     ui/themes/HintOverrideProxyStyle.cpp
@@ -862,6 +864,8 @@ SET(LAUNCHER_SOURCES
     ui/themes/ThemeManager.h
     ui/themes/CatPack.cpp
     ui/themes/CatPack.h
+    ui/themes/ThemeRepository.cpp
+    ui/themes/ThemeRepository.h
     ui/themes/CatPainter.cpp
     ui/themes/CatPainter.h
 
@@ -1134,6 +1138,10 @@ SET(LAUNCHER_SOURCES
     ui/widgets/WideBar.cpp
     ui/widgets/AppearanceWidget.h
     ui/widgets/AppearanceWidget.cpp
+    ui/widgets/ThemeDownloadWidget.h
+    ui/widgets/ThemeDownloadWidget.cpp
+    ui/widgets/LibrarySidebar.h
+    ui/widgets/LibrarySidebar.cpp
     ui/widgets/MinecraftSettingsWidget.h
     ui/widgets/MinecraftSettingsWidget.cpp
     ui/widgets/JavaSettingsWidget.h
@@ -1199,6 +1207,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/breeze_light/breeze_light.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
+    resources/mono/mono.qrc
     resources/documents/documents.qrc
     resources/shaders/shaders.qrc
     "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"

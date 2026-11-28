@@ -23,9 +23,11 @@
 
 #include <translations/TranslationsModel.h>
 #include <QTextCursor>
+#include "ui/themes/ThemeRepository.h"
 
 class QTextCharFormat;
 class SettingsObject;
+class ThemeDownloadWidget;
 
 namespace Ui {
 class AppearanceWidget;
@@ -49,6 +51,7 @@ class AppearanceWidget : public QWidget {
     void applyIconTheme(int index);
     void applyWidgetTheme(int index);
     void applyCatTheme(int index);
+    void selectInstalledItem(ThemeRepoKind kind, const QString& id);
 
     void updateConsolePreview();
     void updateCatPreview();
@@ -57,4 +60,5 @@ class AppearanceWidget : public QWidget {
     bool m_themeSettingsLoaded = false;
     QTextCharFormat m_defaultFormat;
     bool m_themesOnly;
+    ThemeDownloadWidget* m_themeDownloader = nullptr;
 };

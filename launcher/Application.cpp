@@ -646,7 +646,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         // Theming
         m_settings->registerSetting("IconTheme", QString());
         m_settings->registerSetting("ApplicationTheme", QString());
-        m_settings->registerSetting("BackgroundCat", QString("kitteh"));
+        m_settings->registerSetting("BackgroundCat", QString("mono"));
 
         // Remembered state
         m_settings->registerSetting("LastUsedGroupForNewInstance", QString());
@@ -1092,7 +1092,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
                               "\n"
                               "This likely means that a update attempt failed. Please ensure your installation is in working order before "
                               "proceeding.\n"
-                              "Check the Prism Launcher updater log at: \n"
+                              "Check the MonoLauncher updater log at: \n"
                               "%7\n"
                               "for details on the last update attempt.\n"
                               "\n"
@@ -1132,7 +1132,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
                               "\n"
                               "Please ensure your installation is in working order before "
                               "proceeding.\n"
-                              "Check the Prism Launcher updater log at: \n"
+                              "Check the MonoLauncher updater log at: \n"
                               "%1\n"
                               "for details on the last update attempt.")
                                .arg(updateLogPath);
@@ -1167,7 +1167,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             auto infoMsg = tr("Update succeeded\n"
                               "\n"
                               "You are now running %1 .\n"
-                              "Check the Prism Launcher updater log at: \n"
+                              "Check the MonoLauncher updater log at: \n"
                               "%2\n"
                               "for details.")
                                .arg(BuildConfig.printableVersionString())
@@ -1264,27 +1264,13 @@ bool Application::createSetupWizard()
     bool themeInterventionRequired = !validWidgets || !validIcons;
     bool wizardRequired = javaRequired || languageRequired || pasteInterventionRequired || themeInterventionRequired || askjava || login;
     if (wizardRequired) {
-        const bool darkMode = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
         // set default theme after going into theme wizard
         if (!validIcons) {
-            QString defaultIconTheme;
-            if (QApplication::style()->name() == "breeze") {
-                defaultIconTheme = darkMode ? "breeze_dark" : "breeze_light";
-            } else {
-                defaultIconTheme = darkMode ? "flat_white" : "flat";
-            }
-
-            settings()->set("IconTheme", defaultIconTheme);
+            // MonoLauncher ships its own look: Mono Line icons with the Mono theme
+            settings()->set("IconTheme", QStringLiteral("mono"));
         }
         if (!validWidgets) {
-#if defined(Q_OS_LINUX)
-            const QString style = "system";
-#else
-            const QString style = darkMode ? QStringLiteral("dark") : QStringLiteral("bright");
-
-#endif
-
-            settings()->set("ApplicationTheme", style);
+            settings()->set("ApplicationTheme", QStringLiteral("mono"));
         }
 
         m_themeManager->applyCurrentlySelectedTheme(true);

@@ -458,41 +458,54 @@ void InstanceView::paintEvent([[maybe_unused]] QPaintEvent* event)
 
     if (model()->rowCount() == 0) {
         painter.save();
-        QString emptyString = tr("Welcome!") + "\n" + tr("Click \"Add Instance\" to get started.");
+        const QString title = tr("Your library is empty");
+        const QString subtitle = tr("Click \"Add Instance\" to create or import one.");
 
-        // calculate the rect for the overlay
+        // A quiet card built from the active theme's palette, so it fits every theme
         painter.setRenderHint(QPainter::Antialiasing, true);
-        QFont font("sans", 20);
-        font.setBold(true);
+        const QPalette pal = palette();
+        QFont titleFont = font();
+        titleFont.setPointSizeF(titleFont.pointSizeF() * 1.35);
+        titleFont.setWeight(QFont::DemiBold);
+        QFont subtitleFont = font();
 
-        QRect bounds = viewport()->geometry();
-        bounds.moveTop(0);
-        auto innerBounds = bounds;
-        innerBounds.adjust(10, 10, -10, -10);
+        QRect bounds = viewport()->rect();
+        const QFontMetrics titleMetrics(titleFont);
+        const QFontMetrics subtitleMetrics(subtitleFont);
+        const int maxTextWidth = qMax(80, bounds.width() - 80);
+        QRect titleRect = titleMetrics.boundingRect(QRect(0, 0, maxTextWidth, 1000), Qt::AlignHCenter | Qt::TextWordWrap, title);
+        QRect subtitleRect =
+            subtitleMetrics.boundingRect(QRect(0, 0, maxTextWidth, 1000), Qt::AlignHCenter | Qt::TextWordWrap, subtitle);
 
-        QColor background = QApplication::palette().color(QPalette::WindowText);
-        QColor foreground = QApplication::palette().color(QPalette::Base);
-        foreground.setAlpha(190);
-        painter.setFont(font);
-        auto fontMetrics = painter.fontMetrics();
-        auto textRect = fontMetrics.boundingRect(innerBounds, Qt::AlignHCenter | Qt::TextWordWrap, emptyString);
-        textRect.moveCenter(bounds.center());
-
-        auto wrapRect = textRect;
-        wrapRect.adjust(-10, -10, 10, 10);
+        const int padX = 28, padY = 20, gap = 6;
+        const int cardWidth = qMax(titleRect.width(), subtitleRect.width()) + 2 * padX;
+        const int cardHeight = titleRect.height() + gap + subtitleRect.height() + 2 * padY;
+        QRect cardRect(0, 0, cardWidth, cardHeight);
+        // slightly above center, clear of the background art in the bottom-right corner
+        cardRect.moveCenter(QPoint(bounds.center().x(), bounds.top() + bounds.height() * 2 / 5));
 
         // check if we are allowed to draw in our area
-        if (!event->rect().intersects(wrapRect)) {
+        if (!event->rect().intersects(cardRect)) {
+            painter.restore();
             return;
         }
 
-        painter.setBrush(QBrush(background));
-        painter.setPen(foreground);
-        painter.drawRoundedRect(wrapRect, 5.0, 5.0);
+        painter.setPen(QPen(pal.color(QPalette::Midlight), 1));
+        painter.setBrush(pal.color(QPalette::AlternateBase));
+        painter.drawRoundedRect(QRectF(cardRect).adjusted(0.5, 0.5, -0.5, -0.5), 6.0, 6.0);
 
-        painter.setPen(foreground);
-        painter.setFont(font);
-        painter.drawText(textRect, Qt::AlignHCenter | Qt::TextWordWrap, emptyString);
+        titleRect = QRect(cardRect.left() + padX, cardRect.top() + padY, cardWidth - 2 * padX, titleRect.height());
+        subtitleRect = QRect(cardRect.left() + padX, titleRect.bottom() + 1 + gap, cardWidth - 2 * padX, subtitleRect.height());
+
+        painter.setFont(titleFont);
+        painter.setPen(pal.color(QPalette::WindowText));
+        painter.drawText(titleRect, Qt::AlignHCenter | Qt::TextWordWrap, title);
+
+        QColor subtle = pal.color(QPalette::WindowText);
+        subtle.setAlphaF(0.65);
+        painter.setFont(subtitleFont);
+        painter.setPen(subtle);
+        painter.drawText(subtitleRect, Qt::AlignHCenter | Qt::TextWordWrap, subtitle);
 
         painter.restore();
         return;

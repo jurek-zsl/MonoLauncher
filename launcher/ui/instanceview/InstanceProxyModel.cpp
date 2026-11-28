@@ -39,6 +39,28 @@ QVariant InstanceProxyModel::data(const QModelIndex& index, int role) const
     return data;
 }
 
+void InstanceProxyModel::setGroupFilter(const QString& group)
+{
+    m_filterByGroup = true;
+    m_groupFilter = group;
+    invalidateFilter();
+}
+
+void InstanceProxyModel::clearGroupFilter()
+{
+    m_filterByGroup = false;
+    m_groupFilter.clear();
+    invalidateFilter();
+}
+
+bool InstanceProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    if (!m_filterByGroup)
+        return true;
+    const QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    return index.data(InstanceViewRoles::GroupRole).toString() == m_groupFilter;
+}
+
 bool InstanceProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     const QString leftCategory = left.data(InstanceViewRoles::GroupRole).toString();

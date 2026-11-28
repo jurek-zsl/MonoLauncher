@@ -1,0 +1,11 @@
+{
+  "tag_name": "x",
+  "assets": [
+    { "name": "Nord-theme.zip", "browser_download_url": "https://example.invalid/Nord-theme.zip" },
+    { "name": "Fluent-Dark-icons.zip", "browser_download_url": "https://example.invalid/Fluent-Dark-icons.zip" },
+    { "name": "Teawie-Prison-catpack.zip", "browser_download_url": "https://example.invalid/Teawie-Prison-catpack.zip" },
+    { "name": "Ore.UI.-.Dark.Amethyst-theme.zip", "browser_download_url": "https://example.invalid/Ore.UI.-.Dark.Amethyst-theme.zip" },
+    { "name": "Amoled-theme.zip", "browser_download_url": "https://example.invalid/Amoled-theme.zip" },
+    { "name": "README.md", "browser_download_url": "https://example.invalid/README.md" }
+  ]
+}
