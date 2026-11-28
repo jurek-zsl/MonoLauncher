@@ -1140,6 +1140,8 @@ SET(LAUNCHER_SOURCES
     ui/widgets/AppearanceWidget.cpp
     ui/widgets/ThemeDownloadWidget.h
     ui/widgets/ThemeDownloadWidget.cpp
+    ui/widgets/LibrarySidebar.h
+    ui/widgets/LibrarySidebar.cpp
     ui/widgets/MinecraftSettingsWidget.h
     ui/widgets/MinecraftSettingsWidget.cpp
     ui/widgets/JavaSettingsWidget.h

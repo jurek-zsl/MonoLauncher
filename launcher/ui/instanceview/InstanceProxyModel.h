@@ -24,11 +24,20 @@ class InstanceProxyModel : public QSortFilterProxyModel {
    public:
     InstanceProxyModel(QObject* parent = 0);
 
+    // Show only instances in one group ("" = ungrouped instances).
+    void setGroupFilter(const QString& group);
+    void clearGroupFilter();
+    bool hasGroupFilter() const { return m_filterByGroup; }
+    QString groupFilter() const { return m_groupFilter; }
+
    protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
     QVariant data(const QModelIndex& index, int role) const override;
     bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
     bool subSortLessThan(const QModelIndex& left, const QModelIndex& right) const;
 
    private:
     QCollator m_naturalSort;
+    bool m_filterByGroup = false;
+    QString m_groupFilter;
 };

@@ -109,6 +109,7 @@
 #include "ui/instanceview/InstanceDelegate.h"
 #include "ui/instanceview/InstanceProxyModel.h"
 #include "ui/instanceview/InstanceView.h"
+#include "ui/widgets/LibrarySidebar.h"
 #include "ui/themes/ITheme.h"
 #include "ui/themes/ThemeManager.h"
 #include "ui/widgets/EditableLabel.h"
@@ -333,6 +334,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
             [](const QString& groupName) -> bool { return APPLICATION->instances()->isGroupCollapsed(groupName); });
         connect(view, &InstanceView::groupStateChanged, APPLICATION->instances(), &InstanceList::on_GroupStateChanged);
         ui->horizontalLayout->addWidget(view);
+
+        // Groups sidebar on the left: picking a group filters the instance grid
+        auto* sidebar = new LibrarySidebar(APPLICATION->instances(), ui->centralWidget);
+        connect(sidebar, &LibrarySidebar::groupSelected, this, [this](std::optional<QString> group) {
+            if (group)
+                proxymodel->setGroupFilter(*group);
+            else
+                proxymodel->clearGroupFilter();
+        });
+        ui->horizontalLayout->insertWidget(0, sidebar);
     }
     // The cat background
     {
